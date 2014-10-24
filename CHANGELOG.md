@@ -5,6 +5,9 @@
 * Fix path of assets that should be precompiled
 
 ## 2.0.0
+
+* `#7700` No flash message on status page
+
 ## 2.0.0.pre8
 
 * Updated dependency to plugins plugin

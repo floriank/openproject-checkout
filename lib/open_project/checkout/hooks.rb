@@ -3,18 +3,34 @@ module OpenProject::Checkout
     # Renders the checkout URL
     #
     # Context:
+    # * :params => Current parameters
     # * :project => Current project
-    # * :repository => Current Repository
     #
-    def view_repositories_show_contextual(context={})
-      return unless context[:repository].present? && (
+    def view_common_error_details(context={})
+      params = context[:params]
+      project = context[:project]
+      repository = project ? project.repository : nil
+
+      if params[:controller] == "repository"
+        show_repository_context(context, context[:project], context[:repository])
+      end
+    end
+
+    def view_repositories_show_contextual(context)
+      show_repository_context(context, context[:project], context[:repository])
+    end
+
+    private
+
+    def show_repository_context(context, project, repository)
+      return unless repository && (
         Setting.checkout_display_checkout_info == 'everywhere' || (
           Setting.checkout_display_checkout_info == 'browse' &&
           context[:request].params[:action] == 'show'
         )
       )
 
-      protocols = context[:repository].checkout_protocols.select do |p|
+      protocols = repository.checkout_protocols.select do |p|
         p.access_rw(User.current)
       end
 
@@ -22,6 +38,7 @@ module OpenProject::Checkout
       default = protocols.find(&:default?) || protocols.first
 
       context.merge!({
+        :repository => repository,
         :protocols => protocols,
         :default_protocol => default,
         :checkout_path => path
